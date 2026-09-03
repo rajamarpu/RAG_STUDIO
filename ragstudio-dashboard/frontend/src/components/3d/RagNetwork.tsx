@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { useMemo, useRef, useEffect, useCallback } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -58,13 +58,12 @@ export function RagNetwork({
   const reducedQuality = useReducedQuality();
   const prefersReducedMotion = useReducedMotion();
   const [internalHovered, setInternalHovered] = useState<string | null>(null);
-  const [nodeScales, setNodeScales] = useState<Record<string, number>>({});
+  const nodeScalesRef = useRef<Record<string, number>>({});
   const groupRef = useRef<THREE.Group>(null);
   const particleRefs = useRef<THREE.Points[]>([]);
 
   const hoveredStage = hoveredStageProp ?? internalHovered;
 
-  // Stage data with computed states
   const stages = useMemo((): StageData[] => {
     return STAGE_CONFIG.map((config) => {
       const isActive = activeStage === config.id;
@@ -92,33 +91,28 @@ export function RagNetwork({
   useEffect(() => {
     const initialScales: Record<string, number> = {};
     STAGE_CONFIG.forEach(s => { initialScales[s.id] = 1; });
-    setNodeScales(initialScales);
+    nodeScalesRef.current = initialScales;
   }, []);
 
   // Animate node scales on hover/active
   useFrame((_, _delta) => {
     if (prefersReducedMotion) return;
 
-    setNodeScales(prev => {
-      const next = { ...prev };
-      let changed = false;
-
-      stages.forEach(stage => {
+    nodeScalesRef.current = {
+      ...nodeScalesRef.current,
+      ...stages.reduce((acc, stage) => {
         const target = stage.isHovered ? 1.3 : stage.isActive ? 1.15 : 1;
-        const current = next[stage.id] || 1;
+        const current = nodeScalesRef.current[stage.id] || 1;
         const diff = target - current;
 
         if (Math.abs(diff) > 0.01) {
-          next[stage.id] = current + diff * 0.15;
-          changed = true;
+          acc[stage.id] = current + diff * 0.15;
         } else if (current !== target) {
-          next[stage.id] = target;
-          changed = true;
+          acc[stage.id] = target;
         }
-      });
-
-      return changed ? next : prev;
-    });
+        return acc;
+      }, {} as Record<string, number>),
+    };
   });
 
   // Flow particles along connections
@@ -265,7 +259,7 @@ export function RagNetwork({
 
       {/* Stage Nodes */}
       {stages.map((stage) => {
-        const scale = nodeScales[stage.id] || 1;
+        const scale = nodeScalesRef.current[stage.id] || 1;
         const isActive = stage.isActive;
         const isHovered = stage.isHovered;
         const progress = stage.progress;

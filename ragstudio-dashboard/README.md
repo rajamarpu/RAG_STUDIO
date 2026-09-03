@@ -76,9 +76,9 @@ docker-compose exec ollama ollama pull llama3:8b
 docker-compose exec ollama ollama pull nomic-embed-text
 
 # Access the application
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:8001/api/v1
-# API Docs: http://localhost:8001/docs
+# Frontend: http://localhost:5176
+# Backend API: http://localhost:8000/api/v1
+# API Docs: http://localhost:8000/docs
 ```
 
 ### Manual Setup
@@ -154,6 +154,15 @@ ragstudio-dashboard/
 └── README.md
 ```
 
+## Actual Project Layout
+
+- `frontend/` contains all React, Vite, TypeScript, styling, assets, and frontend dependencies.
+- `backend/` contains all FastAPI, Python, database, RAG, model, upload, and backend test files.
+- `scripts/` contains only root-level development helpers used to start or stop services.
+- The root contains workspace commands, Docker Compose, documentation, and environment-independent project files.
+
+Run `npm run dev` for the frontend or `npm run backend` for the backend. Use `npm run dev:all` only when both services are wanted together.
+
 ## API Endpoints
 
 ### Documents
@@ -219,7 +228,7 @@ CHROMA_PORT=8000
 
 # API
 API_PORT=8000
-CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
+CORS_ORIGINS=["http://localhost:5176","http://localhost:3000","http://localhost:5173"]
 ```
 
 Frontend settings (`.env`):
