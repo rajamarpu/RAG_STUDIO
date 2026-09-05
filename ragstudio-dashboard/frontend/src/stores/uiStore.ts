@@ -15,10 +15,6 @@ interface UIState {
   closeCommandPalette: () => void;
   toggleCommandPalette: () => void;
 
-  // Theme
-  theme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark') => void;
-
   // Modals
   activeModal: string | null;
   openModal: (id: string) => void;
@@ -58,10 +54,6 @@ export const useUIStore = create<UIState>()(
       closeCommandPalette: () => set({ commandPaletteOpen: false }),
       toggleCommandPalette: () => set((state) => ({ commandPaletteOpen: !state.commandPaletteOpen })),
 
-      // Theme
-      theme: 'light',
-      setTheme: (theme) => set({ theme }),
-
       // Modals
       activeModal: null,
       openModal: (id) => set({ activeModal: id }),
@@ -92,21 +84,19 @@ export const useUIStore = create<UIState>()(
       name: 'rag-ui-store',
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
-        theme: state.theme,
       }),
     }
   )
 );
 
-// Selectors for performance
+// Selectors for performance — use primitive values to avoid new reference on every render
 export const useSidebarCollapsed = () => useUIStore((state) => state.sidebarCollapsed);
 export const useSidebarOpen = () => useUIStore((state) => state.sidebarOpen);
 export const useCommandPaletteOpen = () => useUIStore((state) => state.commandPaletteOpen);
-export const useTheme = () => useUIStore((state) => state.theme);
 export const useToasts = () => useUIStore((state) => state.toasts);
 export const useGlobalLoading = () => useUIStore((state) => state.globalLoading);
-export const useRetrievalState = () => useUIStore((state) => ({
-  active: state.retrievalActive,
-  stage: state.retrievalStage,
-  progress: state.retrievalProgress,
-}));
+
+// Retrieval state selectors — individual primitives (NOT object literal)
+export const useRetrievalActive = () => useUIStore((state) => state.retrievalActive);
+export const useRetrievalStage = () => useUIStore((state) => state.retrievalStage);
+export const useRetrievalProgress = () => useUIStore((state) => state.retrievalProgress);

@@ -4,11 +4,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "node scripts/dev.js",
     "dev:frontend": "npm --prefix frontend run dev",
     "backend": "node scripts/kill-ports.js 8000 && node scripts/run-backend.js",
     "dev:backend": "node scripts/run-backend.js",
-    "dev:all": "concurrently -k -n frontend,backend -c yellow,green \"npm run dev\" \"npm run backend\"",
+    "dev:all": "npm run dev",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview -- --host",
     "check": "npm --prefix frontend run build",

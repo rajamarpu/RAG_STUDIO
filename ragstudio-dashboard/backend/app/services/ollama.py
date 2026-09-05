@@ -42,7 +42,7 @@ class OllamaService:
     async def health_check(self) -> Dict[str, Any]:
         """Check Ollama service health."""
         try:
-            response = await self.client.get("/api/tags")
+            response = await self.client.get("/api/tags", timeout=5.0)
             response.raise_for_status()
             data = response.json()
             models = [m["name"] for m in data.get("models", [])]

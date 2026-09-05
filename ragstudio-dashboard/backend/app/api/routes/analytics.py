@@ -29,8 +29,9 @@ async def get_query_analytics(
     knowledge_base_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    # real counts from queries_log
+    period_start = datetime.now(timezone.utc) - timedelta(days=days)
     base_stmt = select(QueryLog)
+    base_stmt = base_stmt.where(QueryLog.created_at >= period_start)
     if knowledge_base_id:
         base_stmt = base_stmt.where(QueryLog.knowledge_base_id == knowledge_base_id)
     result = await db.execute(base_stmt)
@@ -142,6 +143,10 @@ async def get_performance_analytics(db: AsyncSession = Depends(get_db)):
     avg = sum(latencies)/n
     error_rate = sum(1 for l in logs if l.status != "success")/n
     # rough breakdown: retrieval ~30% of latency, embedding ~20%, generation ~50% if not tracked separately
+    first_created_at = logs[0].created_at
+    if first_created_at.tzinfo is None:
+        first_created_at = first_created_at.replace(tzinfo=timezone.utc)
+
     return PerformanceAnalytics(
         avg_embedding_time_ms=round(avg*0.2, 2),
         avg_retrieval_time_ms=round(avg*0.3, 2),
@@ -150,7 +155,7 @@ async def get_performance_analytics(db: AsyncSession = Depends(get_db)):
         p95_response_time_ms=round(pct(95), 2),
         p99_response_time_ms=round(pct(99), 2),
         error_rate=round(error_rate, 4),
-        throughput_qps=round(n / max(1, (datetime.now(timezone.utc) - logs[0].created_at).total_seconds()) if logs else 0, 2),
+        throughput_qps=round(n / max(1, (datetime.now(timezone.utc) - first_created_at).total_seconds()), 2),
     )
 
 
@@ -159,7 +164,7 @@ async def get_analytics_overview(
     days: int = Query(7, ge=1, le=90),
     db: AsyncSession = Depends(get_db),
 ):
-    query_analytics = await get_query_analytics(days=days, db=db)
+    query_analytics = await get_query_analytics(days=days, knowledge_base_id=None, db=db)
     usage_analytics = await get_usage_analytics(db=db)
     performance_analytics = await get_performance_analytics(db=db)
 

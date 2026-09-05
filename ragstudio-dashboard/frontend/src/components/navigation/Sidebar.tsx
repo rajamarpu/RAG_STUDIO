@@ -36,6 +36,7 @@ const NAV_ITEMS = [
   { path: '/evaluations', label: 'Evaluations', icon: CheckCircle, key: 'evaluations' },
   { path: '/analytics', label: 'Analytics', icon: TrendingUp, key: 'analytics' },
   { path: '/settings', label: 'Settings', icon: Settings, key: 'settings' },
+  { path: '/models', label: 'Models', icon: Library, key: 'models' },
   { path: '/support', label: 'Support', icon: MessageSquare, key: 'support' },
   { path: '/api-docs', label: 'API Docs', icon: FileText, key: 'api-docs' },
 ];
@@ -54,6 +55,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   evaluations: CheckCircle,
   analytics: TrendingUp,
   settings: Settings,
+  models: Library,
   support: MessageSquare,
   'api-docs': FileText,
 };
@@ -62,7 +64,12 @@ export function Sidebar() {
   const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { sidebarCollapsed: collapsed, setSidebarCollapsed: setCollapsed } = useUIStore();
+  const {
+    sidebarCollapsed: collapsed,
+    sidebarOpen,
+    setSidebarCollapsed: setCollapsed,
+    setSidebarOpen,
+  } = useUIStore();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -108,7 +115,7 @@ export function Sidebar() {
         role="navigation"
         aria-label="Main navigation"
         initial={{ x: -246 }}
-        animate={{ x: 0 }}
+        animate={{ x: isMobileOverlay && !sidebarOpen ? -246 : 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         style={{
           background: 'var(--bg-primary)',
@@ -174,6 +181,7 @@ export function Sidebar() {
                     aria-current={isActive ? 'page' : undefined}
                     onMouseEnter={() => setHoveredItem(item.key)}
                     onMouseLeave={() => setHoveredItem(null)}
+                    onClick={() => isMobileOverlay && setSidebarOpen(false)}
                     tabIndex={0}
                   >
                     <motion.div
@@ -290,13 +298,13 @@ export function Sidebar() {
 
       {/* Overlay for mobile */}
       <AnimatePresence>
-        {!collapsed && isMobileOverlay && (
+        {sidebarOpen && isMobileOverlay && (
           <motion.div
             className="fixed inset-0 z-40 bg-black/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setCollapsed(true)}
+            onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
         )}

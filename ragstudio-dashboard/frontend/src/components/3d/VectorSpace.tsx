@@ -24,7 +24,7 @@ interface QueryPoint {
 }
 
 interface VectorSpaceProps {
-  chunks: ChunkPoint[];
+  chunks?: ChunkPoint[];
   query?: QueryPoint | null;
   retrievedIds?: string[];
   radius?: number;
@@ -32,6 +32,10 @@ interface VectorSpaceProps {
   onChunkHover?: (chunk: ChunkPoint | null) => void;
   onChunkClick?: (chunk: ChunkPoint) => void;
   showLabels?: boolean;
+  showQueryVector?: boolean;
+  showConnections?: boolean;
+  onPointClick?: (point: ChunkPoint) => void;
+  queryVector?: number[];
 }
 
 export function VectorSpace({

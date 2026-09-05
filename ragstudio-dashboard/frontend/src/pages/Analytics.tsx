@@ -29,7 +29,7 @@ export function Analytics() {
       try {
         const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
         const [ov, kbList] = await Promise.all([
-          analyticsApi.overview().catch(() => null),
+          analyticsApi.overview({ days }).catch(() => null),
           knowledgeBaseApi.list({ page: 1, page_size: 20 }).catch(() => ({ items: [], total: 0 } as any)),
         ]);
         if (cancelled) return;

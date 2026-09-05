@@ -161,7 +161,7 @@ ragstudio-dashboard/
 - `scripts/` contains only root-level development helpers used to start or stop services.
 - The root contains workspace commands, Docker Compose, documentation, and environment-independent project files.
 
-Run `npm run dev` for the frontend or `npm run backend` for the backend. Use `npm run dev:all` only when both services are wanted together.
+Run `npm run dev` from `ragstudio-dashboard/` to start Ollama (when needed), the backend, and the frontend together. Use `npm run dev:frontend` for the frontend only, or `npm run backend` for the backend only. Ollama must be installed; the dev runner starts `ollama serve` automatically when its API is not already available.
 
 ## API Endpoints
 

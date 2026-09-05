@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Search, Database, FileText } from 'lucide-react';
+import { Search, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Card } from '../components/ui/Card';
+import { chunkApi } from '../api/client';
 
 export function Chunks() {
   const [chunks, setChunks] = useState<any[]>([]);
@@ -13,31 +14,13 @@ export function Chunks() {
   const fetchChunks = async () => {
     try {
       setLoading(true);
-      // chunks are not directly paginated, fetch documents and their chunks via /documents
-      // fallback: query via vector store stats: we list documents and infer
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/documents?page=1&page_size=20&search=${encodeURIComponent(search)}`);
-      const data = await res.json();
-      // data.items have no chunks details, so we synthesize empty if none
-      // For real chunks, we call GET /documents? but we need chunks table: we will call backend chunks endpoint if exists, else show zero
-      // Since chunks are stored in DB, we can try to fetch via custom endpoint; fallback to documents
-      if (data.items && data.items.length) {
-        // try to fetch chunks per doc via knowledge-base stats? For now show document-based placeholder
-        // Attempt to fetch chunks list if backend exposes /chunks (we keep generic)
-        try {
-          const chunkRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/documents?knowledge_base_id=${kbFilter}`);
-          // not needed
-        } catch {}
-        // If no real chunks endpoint, show chunks derived from documents chunk_count but not text
-        const all: any[] = [];
-        for (const d of data.items) {
-          for (let i = 0; i < (d.chunk_count || 0); i++) {
-            all.push({ id: `${d.id}_chunk_${i}`, document_title: d.title, chunk_index: i, text: `Chunk ${i} of ${d.title} — content preview unavailable (real data after indexing)`, kb: d.knowledge_base_id });
-          }
-        }
-        setChunks(all);
-      } else {
-        setChunks([]);
-      }
+      const response = await chunkApi.list({
+        page: 1,
+        page_size: 100,
+        search: search || undefined,
+        knowledge_base_id: kbFilter || undefined,
+      });
+      setChunks(response.items.map(chunk => ({ ...chunk, kb: chunk.knowledge_base_id })));
     } catch {
       setChunks([]);
     } finally {

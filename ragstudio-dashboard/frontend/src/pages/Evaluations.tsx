@@ -10,7 +10,7 @@ import { Modal, FormModal } from '../components/ui/Modal';
 import {
   Plus, Play, CheckCircle, AlertCircle, Clock, Loader2, X, Target,
   Award, BarChart3, FileCheck, Filter, Search, Download, RefreshCw,
-  ThumbsUp, ThumbsDown, Star, TrendingUp, Database, Brain, Zap
+  ThumbsUp, ThumbsDown, Star, TrendingUp, Database, Brain, Zap, ChevronRight
 } from 'lucide-react';
 import { useUIStore } from '../stores/uiStore';
 

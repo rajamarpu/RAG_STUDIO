@@ -27,6 +27,7 @@ from app.api.routes import (
     evaluations,
     analytics,
     system,
+    chunks,
 )
 
 # Setup logging
@@ -138,6 +139,7 @@ app.include_router(query.router, prefix=settings.API_PREFIX)
 app.include_router(chat.router, prefix=settings.API_PREFIX)
 app.include_router(evaluations.router, prefix=settings.API_PREFIX)
 app.include_router(analytics.router, prefix=settings.API_PREFIX)
+app.include_router(chunks.router, prefix=settings.API_PREFIX)
 
 
 # Root endpoint

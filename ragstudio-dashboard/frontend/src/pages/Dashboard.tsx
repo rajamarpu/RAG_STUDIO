@@ -14,18 +14,16 @@ import {
   Clock, HardDrive, Layers
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useUIStore } from '../stores/uiStore';
-import { systemApi, knowledgeBaseApi, analyticsApi } from '../api/client';
+import { useUIStore, useRetrievalActive, useRetrievalStage, useRetrievalProgress } from '../stores/uiStore';
+import { systemApi, knowledgeBaseApi, analyticsApi, documentApi } from '../api/client';
 import { EmptyState, MetricSkeleton } from '../components/ui/EmptyState';
 
 export function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'pipeline' | 'vector' | 'graph'>('overview');
-  const { retrievalActive, retrievalStage, retrievalProgress } = useUIStore((state) => ({
-    retrievalActive: state.retrievalActive,
-    retrievalStage: state.retrievalStage,
-    retrievalProgress: state.retrievalProgress,
-  }));
+  const retrievalActive = useRetrievalActive();
+  const retrievalStage = useRetrievalStage();
+  const retrievalProgress = useRetrievalProgress();
 
   const [stats, setStats] = useState({
     kb: 0, docs: 0, chunks: 0, queries: 0, latency: 0, successRate: 0,
@@ -61,21 +59,23 @@ export function Dashboard() {
       setVectorCount(usageVal?.total_chunks ?? 0);
       setHealth(healthVal);
 
-      // recent activity from documents + queries
+      // Recent activity is best-effort and must not block the dashboard metrics.
       const activities: any[] = [];
-      if (usageVal) {
-        // we don't have real recent activity list yet; show zero state if none
-        // try to fetch documents for recent activity
-        try {
-          const docRes: any = await (await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/documents?page=1&page_size=5`)).json();
-          if (docRes?.items?.length) {
-            docRes.items.forEach((d: any, i: number) => {
-              activities.push({
-                id: i, type: 'document', title: d.title, action: d.status === 'completed' ? 'Indexed' : d.status, time: new Date(d.updated_at || d.created_at).toLocaleString(), status: d.status === 'completed' ? 'success' : d.status === 'failed' ? 'error' : 'processing', kb: d.knowledge_base_id,
-              });
-            });
-          }
-        } catch {}
+      try {
+        const docRes = await documentApi.list({ page: 1, page_size: 5 });
+        docRes.items.forEach((document, index) => {
+          activities.push({
+            id: document.id || index,
+            type: 'document',
+            title: document.title,
+            action: document.status === 'completed' ? 'Indexed' : document.status,
+            time: new Date(document.updated_at || document.created_at).toLocaleString(),
+            status: document.status === 'completed' ? 'success' : document.status === 'failed' ? 'error' : 'processing',
+            kb: document.knowledge_base_id,
+          });
+        });
+      } catch (error) {
+        console.warn('recent activity unavailable', error);
       }
       setRecentActivity(activities);
     } catch (e) {
@@ -219,6 +219,7 @@ export function Dashboard() {
 }
 
 function OverviewTab({ recentActivity, health, vectorCount, quickActions }: any) {
+  const navigate = useNavigate();
   const ollamaOk = health?.checks?.ollama?.status === 'healthy';
   const chromaOk = health?.checks?.chromadb?.status === 'healthy';
 

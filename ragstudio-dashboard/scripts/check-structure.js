@@ -16,8 +16,8 @@ if (!existsSync(path.join(root, "frontend", "vite.config.ts"))) errors.push("fro
 if (!existsSync(path.join(root, "backend", "requirements.txt"))) errors.push("backend/requirements.txt is missing");
 
 const rootPackage = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
-if (rootPackage.scripts?.dev !== "npm --prefix frontend run dev") {
-  errors.push("root npm run dev must delegate to frontend/");
+if (rootPackage.scripts?.dev !== "node scripts/dev.js") {
+  errors.push("root npm run dev must delegate to scripts/dev.js");
 }
 if (!rootPackage.scripts?.backend?.includes("scripts/run-backend.js")) {
   errors.push("root npm run backend must delegate to scripts/run-backend.js");

@@ -10,6 +10,7 @@ interface ParticleFieldProps {
   color?: string;
   opacity?: number;
   spread?: number;
+  variant?: string;
 }
 
 export function ParticleField({

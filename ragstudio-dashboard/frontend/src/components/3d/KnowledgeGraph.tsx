@@ -23,13 +23,14 @@ interface GraphEdge {
 }
 
 interface KnowledgeGraphProps {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
+  nodes?: GraphNode[];
+  edges?: GraphEdge[];
   onNodeHover?: (node: GraphNode | null) => void;
   onNodeClick?: (node: GraphNode) => void;
   animate?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  onEdgeClick?: (edge: GraphEdge) => void;
 }
 
 export function KnowledgeGraph({

@@ -6,7 +6,6 @@ import { CommandPalette } from './components/navigation/CommandPalette';
 import { SidebarToggle } from './components/navigation/Sidebar';
 import { ToastContainer } from './components/animations/PageTransition';
 import { useUIStore } from './stores/uiStore';
-import { ThemeSelector } from './components/themes/ThemeSelector';
 import { OllamaStatusBanner } from './components/OllamaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -27,6 +26,7 @@ const Queries = lazy(() => import('./pages/Queries').then(m => ({ default: m.Que
 const QueryHistory = lazy(() => import('./pages/QueryHistory').then(m => ({ default: m.QueryHistory })));
 const Support = lazy(() => import('./pages/Support').then(m => ({ default: m.Support })));
 const ApiDocs = lazy(() => import('./pages/ApiDocs').then(m => ({ default: m.ApiDocs })));
+const Models = lazy(() => import('./pages/Models').then(m => ({ default: m.Models })));
 
 // New ragstudio pages
 const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.default })));
@@ -45,7 +45,7 @@ function PageFallback() {
 
 // Main Layout with Sidebar (existing pages)
 function MainLayout() {
-  const { sidebarCollapsed, sidebarOpen, setSidebarOpen, commandPaletteOpen, closeCommandPalette } = useUIStore();
+  const { sidebarOpen, setSidebarOpen, commandPaletteOpen, closeCommandPalette } = useUIStore();
   const location = useLocation();
 
   return (
@@ -60,8 +60,7 @@ function MainLayout() {
       <div
         className="main-content flex-1 flex flex-col min-w-0 min-h-0"
         style={{
-          marginLeft: sidebarCollapsed ? '76px' : '246px',
-          transition: 'margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'padding-left 250ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Top Navigation Bar */}
@@ -94,9 +93,6 @@ function MainLayout() {
                 ⌘K
               </kbd>
             </button>
-
-            {/* Theme Selector */}
-            <ThemeSelector />
 
             {/* User Menu */}
             <div className="relative">
@@ -154,6 +150,7 @@ function getPageTitle(pathname: string): string {
     '/evaluations': 'Evaluations',
     '/analytics': 'Analytics',
     '/settings': 'Settings',
+    '/models': 'Models',
     '/support': 'Support',
     '/api-docs': 'API Docs',
   };
@@ -214,6 +211,7 @@ function AppRoutes() {
         <Route path="/evaluations" element={<Evaluations />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/models" element={<Models />} />
         <Route path="/support" element={<Support />} />
         <Route path="/api-docs" element={<ApiDocs />} />
       </Route>

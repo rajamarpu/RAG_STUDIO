@@ -6,18 +6,16 @@ import { Select } from '../components/ui/Select';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import {
-  User, Bell, Shield, Database, Brain, Palette,
+  User, Bell, Shield, Database, Brain,
   Key, Terminal, Download, Upload, Trash2, RefreshCw,
-  ChevronRight, Save, Loader2, CheckCircle, AlertCircle,
-  Moon, Sun, Monitor, Zap, Server, Cpu, HardDrive, Network
+  ChevronRight, Save, Loader2, CheckCircle, AlertCircle, SlidersHorizontal, Plus,
+  Monitor, Zap, Server, Cpu, HardDrive, Network
 } from 'lucide-react';
-import { useTheme } from '../components/themes/ThemeProvider';
 import { useUIStore } from '../stores/uiStore';
 import { systemApi, knowledgeBaseApi, documentApi } from '../api/client';
 
 const SETTINGS_TABS = [
   { id: 'general', label: 'General', icon: User },
-  { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'models', label: 'Models', icon: Brain },
   { id: 'database', label: 'Database', icon: Database },
   { id: 'api', label: 'API & Keys', icon: Key },
@@ -26,8 +24,7 @@ const SETTINGS_TABS = [
 ];
 
 export function Settings() {
-  const { theme, setTheme, isTransitioning } = useTheme();
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'models' | 'database' | 'api' | 'notifications' | 'advanced'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'models' | 'database' | 'api' | 'notifications' | 'advanced'>('general');
   const [saving, setSaving] = useState(false);
   const { addToast } = useUIStore();
 
@@ -278,7 +275,6 @@ export function Settings() {
           className="flex-1 min-h-0 p-6 overflow-y-auto"
         >
           {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} />}
-          {activeTab === 'appearance' && <AppearanceSettings theme={theme} setTheme={setTheme} isTransitioning={isTransitioning} />}
           {activeTab === 'models' && <ModelSettings settings={settings} setSettings={setSettings} />}
           {activeTab === 'database' && <DatabaseSettings settings={settings} setSettings={setSettings} />}
           {activeTab === 'api' && <ApiSettings settings={settings} setSettings={setSettings} />}
@@ -332,69 +328,6 @@ function GeneralSettings({ settings, setSettings }: { settings: any; setSettings
             { value: 'zh', label: 'Chinese' },
           ]}
         />
-      </div>
-    </div>
-  );
-}
-
-function AppearanceSettings({ theme, setTheme, isTransitioning }: { theme: string; setTheme: (t: string) => void; isTransitioning: boolean }) {
-  const themes = [
-    { id: 'light', label: 'Light', icon: Sun, description: 'Clean & bright interface' },
-    { id: 'dark', label: 'Dark', icon: Moon, description: 'Easy on the eyes' },
-  ];
-
-  return (
-    <div className="max-w-3xl space-y-6">
-      <SectionTitle title="Theme" description="Choose your preferred color scheme" icon={Palette} />
-
-      <div className="grid sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Select theme">
-        {themes.map(t => (
-          <button
-            key={t.id}
-            onClick={() => !isTransitioning && setTheme(t.id as 'light' | 'dark')}
-            className={`relative p-4 rounded-xl transition-all duration-200 border-2 flex flex-col items-center gap-3 ${
-              theme === t.id
-                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5'
-                : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
-            }`}
-            role="radio"
-            aria-checked={theme === t.id}
-            disabled={isTransitioning}
-          >
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-primary)/10', color: 'var(--accent-primary)' }}>
-              <t.icon className="w-6 h-6" />
-            </div>
-            <div className="text-center">
-              <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{t.label}</p>
-              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t.description}</p>
-            </div>
-            {theme === t.id && (
-              <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-primary)', color: 'white' }}>
-                <CheckCircle className="w-3.5 h-3.5" />
-              </div>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
-        <h4 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-          <Zap className="w-5 h-5" />
-          Animation Preferences
-        </h4>
-        <div className="space-y-3">
-          <label className="flex items-center justify-between">
-            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Reduce Motion</span>
-            <Toggle
-              checked={false}
-              onChange={() => { /* handled by system */ }}
-              disabled
-            />
-          </label>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Respects system-level "Reduce Motion" accessibility setting
-          </p>
-        </div>
       </div>
     </div>
   );

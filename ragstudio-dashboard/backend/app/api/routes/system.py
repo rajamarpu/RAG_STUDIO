@@ -55,10 +55,11 @@ async def health_check():
     # Determine overall status
     all_healthy = all(c.get("status") == "healthy" for c in checks.values())
     any_unhealthy = any(c.get("status") == "unhealthy" for c in checks.values())
+    any_unavailable = any(c.get("status") in {"unavailable", "degraded"} for c in checks.values())
 
     if all_healthy:
         status = "healthy"
-    elif any_unhealthy:
+    elif any_unhealthy or any_unavailable:
         status = "degraded"
     else:
         status = "unhealthy"
@@ -86,7 +87,10 @@ async def system_stats():
     # Get system stats
     cpu_percent = psutil.cpu_percent(interval=0.1)
     memory = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
+    try:
+        disk = psutil.disk_usage(os.path.abspath(os.sep))
+    except Exception:
+        disk = psutil.disk_usage(os.getcwd())
 
     # include db in api for visibility
     return SystemStats(
@@ -134,6 +138,28 @@ async def pull_ollama_model(model: str = "llama3:8b"):
     except Exception as e:
         logger.error("Pull failed", model=model, error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/models")
+async def list_models():
+    """List Ollama models. Never 500 when Ollama is down — returns empty list."""
+    try:
+        models = await ollama_service.list_models()
+        return {"success": True, "models": models, "count": len(models)}
+    except Exception as e:
+        logger.warning("list_models fallback", error=str(e))
+        return {"success": True, "models": [], "count": 0, "error": str(e)}
+
+
+@router.get("/models/{model_name:path}")
+async def get_model_info(model_name: str):
+    """Get info for a single model, with graceful fallback."""
+    try:
+        info = await ollama_service.get_model_info(model_name)
+        return {"success": True, "model": model_name, "info": info}
+    except Exception as e:
+        logger.warning("get_model_info fallback", error=str(e))
+        return {"success": False, "model": model_name, "info": {}, "error": str(e)}
 
 
 @router.post("/settings/reload", response_model=BaseResponse)

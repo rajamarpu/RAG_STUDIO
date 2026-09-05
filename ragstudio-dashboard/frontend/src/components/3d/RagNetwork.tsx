@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect, useCallback } from 'react';
+import { useMemo, useRef, useEffect, useCallback, useState } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -32,8 +32,12 @@ interface RagNetworkProps {
   hoveredStage?: string | null;
   onStageHover?: (stageId: string | null) => void;
   onStageClick?: (stageId: string) => void;
+  onNodeClick?: (node: StageData) => void;
   showFlow?: boolean;
   flowProgress?: number; // 0-1
+  animated?: boolean;
+  showFlowParticles?: boolean;
+  highlightStage?: string;
 }
 
 interface StageData {

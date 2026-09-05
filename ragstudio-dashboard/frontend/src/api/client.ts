@@ -4,6 +4,11 @@
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
+function apiUrl(path: string): URL {
+  const url = `${API_URL}${path}`;
+  return new URL(url, window.location.origin);
+}
+
 // ==================== Types ====================
 
 export interface Document {
@@ -132,7 +137,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 // ==================== HTTP Methods ====================
 
 async function get<T>(path: string, params?: Record<string, any>): Promise<T> {
-  const url = new URL(`${API_URL}${path}`);
+  const url = apiUrl(path);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -170,7 +175,7 @@ async function patch<T>(path: string, body?: any): Promise<T> {
 }
 
 async function del<T>(path: string, params?: Record<string, any>): Promise<T> {
-  const url = new URL(`${API_URL}${path}`);
+  const url = apiUrl(path);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -471,7 +476,24 @@ export const analyticsApi = {
 
   performance: (params?: { days?: number }) => get('/analytics/performance', params),
 
-  overview: () => get('/analytics/overview'),
+  overview: (params?: { days?: number }) => get('/analytics/overview', params),
+};
+
+export interface Chunk {
+  id: string;
+  document_id: string;
+  knowledge_base_id: string;
+  document_title: string;
+  chunk_index: number;
+  text: string;
+  token_count: number;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export const chunkApi = {
+  list: (params?: { knowledge_base_id?: string; search?: string; page?: number; page_size?: number }) =>
+    get<Paginated<Chunk>>('/chunks', params),
 };
 
 // ==================== Evaluations API ====================

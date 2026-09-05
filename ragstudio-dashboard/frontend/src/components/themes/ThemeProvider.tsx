@@ -30,25 +30,17 @@ function getStoredTheme(): Theme | null {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [resolvedTheme, setResolvedTheme] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>(() => getStoredTheme() || getSystemTheme());
+  const [resolvedTheme, setResolvedTheme] = useState<Theme>(() => getStoredTheme() || getSystemTheme());
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Initialize theme on mount
   useEffect(() => {
-    setMounted(true);
-    const stored = getStoredTheme();
-    const initial = stored || getSystemTheme();
-    setThemeState(initial);
-    setResolvedTheme(initial);
     document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(initial);
-  }, []);
+    document.documentElement.classList.add(theme);
+  }, [theme]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (!mounted) return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       const stored = getStoredTheme();
@@ -56,13 +48,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const systemTheme = mediaQuery.matches ? 'dark' : 'light';
         setThemeState(systemTheme);
         setResolvedTheme(systemTheme);
-        document.documentElement.classList.remove('light', 'dark');
-        document.documentElement.classList.add(systemTheme);
       }
     };
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [mounted]);
+  }, []);
 
   // Apply theme to document
   const applyTheme = useCallback((newTheme: Theme) => {
@@ -92,21 +82,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
   }, [theme, setTheme]);
-
-  // Prevent flash of wrong theme before hydration
-  if (!mounted) {
-    return (
-      <ThemeContext.Provider value={{
-        theme: 'light',
-        setTheme: () => {},
-        toggleTheme: () => {},
-        resolvedTheme: 'light',
-        isTransitioning: false,
-      }}>
-        {children}
-      </ThemeContext.Provider>
-    );
-  }
 
   return (
     <ThemeContext.Provider value={{

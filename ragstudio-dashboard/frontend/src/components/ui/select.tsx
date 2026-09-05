@@ -5,9 +5,18 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function Select({
+  options,
+  label,
+  onChange,
+  className,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />;
+}: React.ComponentProps<"select"> & { options?: Array<{ value: string; label: string }>; label?: string }) {
+  const select = (
+    <select className={cn("h-9 rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 text-sm", className)} onChange={onChange} {...props}>
+      {options?.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </select>
+  );
+  return label ? <label className="block space-y-1.5"><span className="text-sm font-medium">{label}</span>{select}</label> : select;
 }
 
 function SelectGroup({

@@ -4,8 +4,12 @@ ChromaDB vector store service.
 import asyncio
 import uuid
 from typing import List, Dict, Any, Optional, Tuple
-import chromadb
-from chromadb.config import Settings as ChromaSettings
+try:
+    import chromadb
+    from chromadb.config import Settings as ChromaSettings
+except ImportError:
+    chromadb = None
+    ChromaSettings = None
 import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
@@ -28,6 +32,8 @@ class VectorStoreService:
     @property
     def client(self):
         """Get or create ChromaDB client - falls back to ephemeral for dev."""
+        if chromadb is None:
+            raise VectorStoreError("ChromaDB is not installed. Install backend requirements to enable vector search.")
         if self._use_ephemeral:
             if self._ephemeral_client is None:
                 self._ephemeral_client = chromadb.EphemeralClient()
@@ -69,6 +75,11 @@ class VectorStoreService:
 
     async def health_check(self) -> Dict[str, Any]:
         """Check ChromaDB service health."""
+        if chromadb is None:
+            return {
+                "status": "unavailable",
+                "error": "ChromaDB dependency is not installed",
+            }
         try:
             # Test connection
             client = self.client
